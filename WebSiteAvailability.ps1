@@ -38,11 +38,19 @@ Foreach ($item in $URLList) {
     $time = (Measure-Command { $request = Invoke-WebRequest -Uri $URL }).TotalMilliseconds
   }   
   catch  
-  {    <# If the request generated an exception (i.e.: 500 server    
+  {    
+  <# If the request generated an exception (i.e.: 500 server    
           error or 404 not found), we can pull the status code from the    
           Exception.Response property #>    
-        $request = $_.Exception.Response    $time = -1  }  ###############################################################################
-  Write-Host $URL  [string] $content = $wc.DownloadString($URL)    # Preparing a custom object, prefill with "under construction" values  $restmp = [PSCustomObject] @{    Time              = Get-Date    Uri               = $URL    ResponseLength    = $request.RawContentLength    TimeTaken         = $time    ARNumber          = $ARNumber    CustomerName      = $CustomerName    Descrip           = $Descrip    URL               = $URL    ReportNet_URL     = $ReportNet_URL    Admin_Server      = $Admin_Server     Weblogic_Domain   = $Weblogic_Domain    Application_Server= $Application_Server    SQL_Server        = $SQL_Server    ReportNet_Server  = $ReportNet_Server    Port_Number       = $Port_Number    Version_Number    = $Version_Number    UTA_DatabaseName  = $UTA_DatabaseName
+  $request = $_.Exception.Response   
+  $time = -1 
+  }  
+  ###############################################################################
+  Write-Host $URL  [string] 
+  $content = $wc.DownloadString($URL)    
+  # Preparing a custom object, prefill with "under construction" values  
+  $restmp = [PSCustomObject] @{    
+  TimeTime              = Get-Date    Uri               = $URL    ResponseLength    = $request.RawContentLength    TimeTaken         = $time    ARNumber          = $ARNumber    CustomerName      = $CustomerName    Descrip           = $Descrip    URL               = $URL    ReportNet_URL     = $ReportNet_URL    Admin_Server      = $Admin_Server     Weblogic_Domain   = $Weblogic_Domain    Application_Server= $Application_Server    SQL_Server        = $SQL_Server    ReportNet_Server  = $ReportNet_Server    Port_Number       = $Port_Number    Version_Number    = $Version_Number    UTA_DatabaseName  = $UTA_DatabaseName
     StatusCode        = [int] -201    StatusDescription = "Website Under Construction"  }
   if($content -notmatch "Under Construction") {    $restmp.StatusCode        = [int] $request.StatusCode    $restmp.StatusDescription = $request.StatusDescription  }  $Result += $restmp
   if ($request.StatusCode -eq 200)  {    $ReportTest = Test-ReportSite $URL "workbrain" "Pwd"  }
