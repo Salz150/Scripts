@@ -1,9 +1,47 @@
 # Import Testing function (also defines prerequisites).C:\Users\LeandroT\Dropbox\Documents\Powershell\Ultimate\Test-ReportSite.ps1
-################################################################################## Website Availability Monitoring## Created by Sravan Kumar S ## Date : 19 Apr 2013## Version : 1.0## Email: sravankumar.s@outlook.com  ##############################################################################
-CLS## The URI list to test#$URLListFile = "C:\Users\LeandroT\Documents\Powershell\WebTest\Weblink_Test.csv" #$URLListFile =  "C:\Users\ltorres\Dropbox\Documents\Powershell\Ultimate\Weblink_TestShort.csv"$URLListFile =  "C:\Users\LeandroT\Dropbox\Documents\Powershell\Ultimate\Weblink_Test.csv"$URLList = Import-CSV $URLListFile -Header ARNumber,CustomerName,Descrip,URL,ReportNet_URL,Admin_Server,Weblogic_Domain,Application_Server,SQL_Server,ReportNet_Server,Port_Number,Version_Number,UTA_DatabaseName -ErrorAction SilentlyContinue$Result = @() $wc = New-Object System.Net.WebClient
+##############################################################################
+##
+## Website Availability Monitoring
+## Created by Sravan Kumar S 
+## Date : 19 Apr 2013
+## Version : 1.0
+## Email: sravankumar.s@outlook.com  
+##############################################################################
+CLS
+## The URI list to test
+#$URLListFile = "C:\Users\LeandroT\Documents\Powershell\WebTest\Weblink_Test.csv" 
+#$URLListFile =  "C:\Users\ltorres\Dropbox\Documents\Powershell\Ultimate\Weblink_TestShort.csv"
+$URLListFile =  "C:\Users\LeandroT\Dropbox\Documents\Powershell\Ultimate\Weblink_Test.csv"
+$URLList = Import-CSV $URLListFile -Header ARNumber,CustomerName,Descrip,URL,ReportNet_URL,Admin_Server,Weblogic_Domain,Application_Server,SQL_Server,ReportNet_Server,Port_Number,Version_Number,UTA_DatabaseName -ErrorAction SilentlyContinue
+$Result = @()
+
+$wc = New-Object System.Net.WebClient
+
 Foreach ($item in $URLList) {
-  $ARNumber           = $item.ARNumber  $CustomerName       = $item.CustomerName  $Descrip            = $item.Descrip  $URL                = $item.URL  $ReportNet_URL      = $item.ReportNet_URL  $Admin_Server       = $item.Admin_Server  $Weblogic_Domain    = $item.Weblogic_Domain  $Application_Server = $item.Application_Server  $SQL_Server         = $item.SQL_Server  $ReportNet_Server   = $item.ReportNet_Server  $Port_Number        = $item.Port_Number  $Version_Number     = $item.Version_Number  $UTA_DatabaseName   = $item.UTA_DatabaseName
-  try {    $request = $null     ## Request the URI, and measure how long the response took.    $time = (Measure-Command { $request = Invoke-WebRequest -Uri $URL }).TotalMilliseconds  }   catch  {    <# If the request generated an exception (i.e.: 500 server    error or 404 not found), we can pull the status code from the    Exception.Response property #>    $request = $_.Exception.Response    $time = -1  }  ###############################################################################
+  $ARNumber           = $item.ARNumber  
+  $CustomerName       = $item.CustomerName  
+  $Descrip            = $item.Descrip  
+  $URL                = $item.URL  
+  $ReportNet_URL      = $item.ReportNet_URL  
+  $Admin_Server       = $item.Admin_Server  
+  $Weblogic_Domain    = $item.Weblogic_Domain  
+  $Application_Server = $item.Application_Server  
+  $SQL_Server         = $item.SQL_Server  
+  $ReportNet_Server   = $item.ReportNet_Server  
+  $Port_Number        = $item.Port_Number  
+  $Version_Number     = $item.Version_Number  
+  $UTA_DatabaseName   = $item.UTA_DatabaseName
+  try 
+  {    
+    $request = $null     
+    ## Request the URI, and measure how long the response took.    
+    $time = (Measure-Command { $request = Invoke-WebRequest -Uri $URL }).TotalMilliseconds
+  }   
+  catch  
+  {    <# If the request generated an exception (i.e.: 500 server    
+          error or 404 not found), we can pull the status code from the    
+          Exception.Response property #>    
+        $request = $_.Exception.Response    $time = -1  }  ###############################################################################
   Write-Host $URL  [string] $content = $wc.DownloadString($URL)    # Preparing a custom object, prefill with "under construction" values  $restmp = [PSCustomObject] @{    Time              = Get-Date    Uri               = $URL    ResponseLength    = $request.RawContentLength    TimeTaken         = $time    ARNumber          = $ARNumber    CustomerName      = $CustomerName    Descrip           = $Descrip    URL               = $URL    ReportNet_URL     = $ReportNet_URL    Admin_Server      = $Admin_Server     Weblogic_Domain   = $Weblogic_Domain    Application_Server= $Application_Server    SQL_Server        = $SQL_Server    ReportNet_Server  = $ReportNet_Server    Port_Number       = $Port_Number    Version_Number    = $Version_Number    UTA_DatabaseName  = $UTA_DatabaseName
     StatusCode        = [int] -201    StatusDescription = "Website Under Construction"  }
   if($content -notmatch "Under Construction") {    $restmp.StatusCode        = [int] $request.StatusCode    $restmp.StatusDescription = $request.StatusDescription  }  $Result += $restmp
